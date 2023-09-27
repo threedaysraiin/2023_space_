@@ -153,8 +153,7 @@ def event_processing():
 
     clock.tick(FPS)
     return running
-
-# random.seed(77)
+random.seed(77)
 enemy_create()
 running = True
 while running:
