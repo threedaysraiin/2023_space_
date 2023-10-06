@@ -1,7 +1,6 @@
 import pygame as pg
 import random
 
-
 pg.init()
 
 screen_width, screen_height = 800, 600
@@ -36,14 +35,16 @@ player_width, player_height = player_img.get_size()
 player_gap = 10
 player_velocity = 10
 player_dx = 0
+player_dy = 0
 player_x = screen_width/2 - player_width/2
-player_y = screen_height  - player_height - player_gap
+player_y = screen_height - player_height - player_gap
 
 # пуля
 bullet_img = pg.image.load('src/bullet.png')
 bullet_width, bullet_height = bullet_img.get_size()
 bullet_dy = -5
-bullet_x = 0     # микро дз - пускать из середины
+bullet_x = player_x + player_width // 2 - bullet_width // 2
+  # микро дз - пускать из середины
 bullet_y = 0
 bullet_alive = False    # есть пуля?
 
@@ -61,8 +62,6 @@ def enemy_create():
     enemy_x = random.randint(0, screen_width - enemy_width)   # screen_width / 2 - enemy_width / 2
     enemy_y = 0
     print(f'CREATE: {enemy_x=}')
-
-
 
 def model_update():
     palayer_model()
@@ -91,8 +90,9 @@ def bullet_model():
 def bullet_create():
     global bullet_y, bullet_x, bullet_alive
     bullet_alive = True
-    bullet_x = player_x  # микро дз - пускать из середины
+    bullet_x = player_x + player_width // 2 - bullet_width // 2  # микро дз - пускать из середины
     bullet_y = player_y - bullet_height
+
 
 def enemy_model():
     """ Изменение положения противника, рассчет поражений."""
@@ -122,8 +122,10 @@ def display_redraw():
         display.blit(bullet_img, (bullet_x, bullet_y))
     pg.display.update()
 
+
+# движение игрока
 def event_processing():
-    global player_dx
+    global player_dx, player_dy
     running = True
     for event in pg.event.get():
         # нажали крестик на окне
@@ -140,8 +142,16 @@ def event_processing():
                 player_dx = -player_velocity
             if event.key == pg.K_d or event.key == pg.K_RIGHT:
                 player_dx = player_velocity
+            if event.key == pg.K_w or event.key == pg.K_UP:  # движение вверх
+                player_dy = -player_velocity
+            if event.key == pg.K_s or event.key == pg.K_DOWN:  # движение вниз
+                player_dy = player_velocity
         if event.type == pg.KEYUP:
-            player_dx = 0
+            if event.key == pg.K_a or event.key == pg.K_LEFT or event.key == pg.K_d or event.key == pg.K_RIGHT:
+                player_dx = 0
+            if event.key == pg.K_w or event.key == pg.K_UP or event.key == pg.K_s or event.key == pg.K_DOWN:
+                player_dy = 0
+
 
         # по левому клику мыши стреляем
         if event.type == pg.MOUSEBUTTONDOWN:
@@ -149,16 +159,25 @@ def event_processing():
             print(f'{key[0]=} {bullet_alive=}')
             if not bullet_alive:
                 bullet_create()
+        # по пробелу стреляем
+        if event.type == pg.KEYDOWN:
+            if event.key == pg.K_SPACE:
+                if not bullet_alive:
+                    bullet_create()
 
 
     clock.tick(FPS)
     return running
-random.seed(77)
+
+# random.seed(77)
 enemy_create()
 running = True
 while running:
     model_update()
     display_redraw()
     running = event_processing()
+    # обновление позиции игрока
+    player_x += player_dx
+    player_y += player_dy
 
 pg.quit()
