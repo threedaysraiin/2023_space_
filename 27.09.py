@@ -165,7 +165,6 @@ def event_processing():
                 if not bullet_alive:
                     bullet_create()
 
-
     clock.tick(FPS)
     return running
 
